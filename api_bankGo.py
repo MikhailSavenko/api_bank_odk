@@ -2,10 +2,13 @@ import requests
 from jsonpath_ng import jsonpath, parse
 
 from get_sid_selenium_headless import auth_sid
+from dotenv import load_dotenv
+import os
 
 
+load_dotenv()
 
-token = "e6e53aea-467a-30a4-901a-3394482b7404"
+token = os.environ.get('TOKEN')
 
 bank_account_window = 'BY37OLMP30130001086900000933'
 bank_account_ceiling = 'BY47OLMP30130009044450000933'
