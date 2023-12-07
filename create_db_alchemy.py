@@ -10,9 +10,10 @@ payment = db.Table('Payment', metadata,
                    db.Column('name', db.Text),
                    db.Column('date', db.Text),
                    db.Column('time', db.Text),
-                   db.Column('amount', db.Text),
+                   db.Column('amount', db.Integer), 
                    db.Column('account_number', db.Text),
                   )
+
 
 payment.create(engine)
 conn.close()
