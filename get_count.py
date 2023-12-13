@@ -58,8 +58,8 @@ def get_bank_statement(user_session):
             "descInData": {
                 "sortByDateDoc": 1,
                 "isNazn": 1,
-                "dateFrom": "2023-12-12T09:00:00+03:00",
-                "dateTo": "2023-12-13T15:45:53+03:00",
+                "dateFrom": "2023-12-11T09:00:00+03:00",
+                "dateTo": "2023-12-13T09:00:00+03:00",
                 "accList": [
                     {
                         "accNumber": f"{BANK_ACCOUNT_WINDOW}",
@@ -80,7 +80,7 @@ def get_bank_statement(user_session):
 
     if response.status_code == 200:
         statement = response.json()
-        print(statement)
+        # print(statement)
         return statement
     else:
         print("Ошибка при получении выписки по счетам:", response.status_code)
@@ -93,12 +93,28 @@ def extract_credit_amount(response_extract_data):
     matches = [match.value for match in jsonpath_expr.find(response_extract_data)]
 
     cr_amount = [i for i in matches if float(i['crAmount']) > 0]
-    print(cr_amount)
+    print(len(cr_amount))
     return cr_amount
 
 
+def get_result(payments):
+    """Достаем нужные поля по каждой оплате"""
+    result_payments = []
+    for payment in payments:
+        # добавить проверку на дубликаты docId
+        crAmount = payment.get('crAmount', None)
+        naznText = payment.get('naznText', None)
+        docId = payment.get('docId', None)
+        docDate = payment.get('docDate', None)
+        result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText})
+    print(result_payments)
+    return result_payments
+
+
 if __name__ == "__main__":
-    user_session = "0C5610551A917AF6E063118A16ACD947"
+    user_session = "0C657142EF3E13DCE063118A16AC81F5"
     get_bank_statement = get_bank_statement(user_session)
     if get_bank_statement:
-        extract_credit_amount(get_bank_statement)
+        extract_credit_amount = extract_credit_amount(get_bank_statement)
+        if extract_credit_amount:
+            get_result(extract_credit_amount)

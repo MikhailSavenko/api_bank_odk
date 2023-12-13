@@ -6,7 +6,7 @@ import os
 load_dotenv()
 
 TOKEN = os.environ.get('TOKEN')
-user_session = "0C5610551A917AF6E063118A16ACD947"
+user_session = "0C631AFDE1C38A6CE063118A16ACD76C"
 headers = {
     "Authorization": f"Bearer {TOKEN}",
     "Content-Type": "application/json",
