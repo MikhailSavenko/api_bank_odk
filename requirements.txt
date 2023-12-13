@@ -1,6 +1,8 @@
 requests
 selenium
 jsonpath-ng
-sqlalchemy
-SQLAlchemy
 python-dotenv
+pyppeteer
+pyyaml  
+ua-parser
+user-agents

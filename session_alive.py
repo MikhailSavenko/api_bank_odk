@@ -1,20 +1,24 @@
 import requests
-from api_bankGo import user_session
+# from blank_sheet import user_session
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
-token = "e6e53aea-467a-30a4-901a-3394482b7404"
-
+TOKEN = os.environ.get('TOKEN')
+user_session = "0C5610551A917AF6E063118A16ACD947"
 headers = {
-    "Authorization": f"Bearer {token}",
+    "Authorization": f"Bearer {TOKEN}",
     "Content-Type": "application/json",
 }
 
 data = {
     "IsSessionAlive": {
-        "userSession": user_session
+        "userSession": f"{user_session}"
     }
 }
 url = "https://ulapi.bgpb.by:8243/wso2_session/isalive/v1.1"
+
 
 def session_alive(url, headers, data):
     response = requests.post(url=url, headers=headers, json=data)
