@@ -3,7 +3,7 @@ from jsonpath_ng import jsonpath, parse
 from dotenv import load_dotenv
 import os
 import time
-from blank_sheet import main_blank_sheet
+# from blank_sheet import main_blank_sheet
 
 load_dotenv()
 
@@ -13,13 +13,12 @@ TOKEN = os.environ.get('TOKEN')
 BANK_ACCOUNT_WINDOW = 'BY37OLMP30130001086900000933'
 BANK_ACCOUNT_CEILING = 'BY47OLMP30130009044450000933'
 
-DATE_FROM = "2023-12-14T10:30:00+03:00"
-DATE_TO = "2023-12-14T11:00:00+03:00"
+DATE_FROM = "2023-12-09T00:00:00+03:00"
+DATE_TO = "2023-12-10T17:00:00:00+03:00"
 
-
+# функция не нужна для работы
 def get_counts():
     """Доступные счета"""
-    user_session = "0C5610551A917AF6E063118A16ACD947"
     url = "https://ulapi.bgpb.by:8243/wso2_account/v1.1/"
     headers = {
         "Authorization": f"Bearer {TOKEN}",
@@ -106,17 +105,20 @@ def get_result(payments):
     result_payments = []
     for payment in payments:
         # добавить проверку на дубликаты docId
+        name = None
+        countract_numbers = None
         crAmount = payment.get('crAmount', None)
         naznText = payment.get('naznText', None)
         docId = payment.get('docId', None)
         docDate = payment.get('docDate', None)
-        result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText})
+        result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText, "name": name, "countract_numbers": countract_numbers})
     print(result_payments)
     return result_payments
 
 
 if __name__ == "__main__":
-    user_session = main_blank_sheet()
+    user_session = '0C74C14171DE4AA0E063118A16AC9F41'
+    # user_session = main_blank_sheet()
     get_bank_statement = get_bank_statement(user_session)
     if get_bank_statement:
         extract_credit_amount = extract_credit_amount(get_bank_statement)
