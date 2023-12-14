@@ -3,14 +3,18 @@ from jsonpath_ng import jsonpath, parse
 from dotenv import load_dotenv
 import os
 import time
+from blank_sheet import main_blank_sheet
 
 load_dotenv()
 
 PAYLOAD = os.environ.get('PAYLOAD')
 TOKEN = os.environ.get('TOKEN')
+
 BANK_ACCOUNT_WINDOW = 'BY37OLMP30130001086900000933'
 BANK_ACCOUNT_CEILING = 'BY47OLMP30130009044450000933'
 
+DATE_FROM = "2023-12-14T10:30:00+03:00"
+DATE_TO = "2023-12-14T11:00:00+03:00"
 
 
 def get_counts():
@@ -58,8 +62,8 @@ def get_bank_statement(user_session):
             "descInData": {
                 "sortByDateDoc": 1,
                 "isNazn": 1,
-                "dateFrom": "2023-12-11T09:00:00+03:00",
-                "dateTo": "2023-12-13T09:00:00+03:00",
+                "dateFrom": DATE_FROM,
+                "dateTo": DATE_TO,
                 "accList": [
                     {
                         "accNumber": f"{BANK_ACCOUNT_WINDOW}",
@@ -112,7 +116,7 @@ def get_result(payments):
 
 
 if __name__ == "__main__":
-    user_session = "0C657142EF3E13DCE063118A16AC81F5"
+    user_session = main_blank_sheet()
     get_bank_statement = get_bank_statement(user_session)
     if get_bank_statement:
         extract_credit_amount = extract_credit_amount(get_bank_statement)

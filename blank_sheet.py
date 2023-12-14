@@ -96,10 +96,14 @@ def authenticate_user(auth_sid, client_id, token):
     return None
 
 
-
-if __name__ == "__main__":
+def main_blank_sheet():
     auth_sid = get_auth_sid()
     if auth_sid:
         client_id = get_client_id(auth_sid)
         if client_id:
             user_session = authenticate_user(auth_sid, client_id, TOKEN)
+            return user_session
+
+
+if __name__ == "__main__":
+    main_blank_sheet()
