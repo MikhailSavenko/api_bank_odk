@@ -8,11 +8,8 @@ load_dotenv()
 PAYLOAD = os.environ.get('PAYLOAD')
 TOKEN = os.environ.get('TOKEN')
 
-DATE_FROM = "2023-12-09T00:00:00+03:00"
-DATE_TO = "2023-12-10T17:00:00:00+03:00"
 
-
-def get_bank_statement(user_session, account):
+def get_bank_statement(user_session, account, DATE_FROM, DATE_TO):
     """Получение выписки по счетам за определенный период"""
     url_extract = "https://ulapi.bgpb.by:8243/wso2_desc/v1.1/"
     headers = {
@@ -77,8 +74,8 @@ def get_result(payments):
     return result_payments
 
 
-def main_get_count(user_session, account):
-    result_get_bank_statement = get_bank_statement(user_session, account)
+def main_get_count(user_session, account, DATE_FROM, DATE_TO):
+    result_get_bank_statement = get_bank_statement(user_session, account, DATE_FROM, DATE_TO)
     if result_get_bank_statement:
         result_extract_credit_amount = extract_credit_amount(result_get_bank_statement)
         if result_extract_credit_amount:
