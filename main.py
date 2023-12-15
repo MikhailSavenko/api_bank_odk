@@ -9,6 +9,7 @@ BANK_ACCOUNT_WINDOW = 'BY37OLMP30130001086900000933'
 BANK_ACCOUNT_CEILING = 'BY47OLMP30130009044450000933'
 user_session = None
 
+
 def authorization():
     global user_session
     go_main_blank_sheet = None
@@ -67,8 +68,8 @@ def process_data():
         
 
 if __name__ == "__main__":
-    schedule.every().day.at("15:37").do(authorization)
-    schedule.every().day.at("15:38").do(process_data)
+    schedule.every().day.at("17:49").do(authorization)
+    schedule.every().day.at("17:50").do(process_data)
 
     while True:
         schedule.run_pending()

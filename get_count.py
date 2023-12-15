@@ -1,7 +1,8 @@
 import requests
-from jsonpath_ng import jsonpath, parse
+from jsonpath_ng import parse
 from dotenv import load_dotenv
 import os
+from payments_db import is_payment_in_txt, payment_write_in_txt
 
 load_dotenv()
 
@@ -62,15 +63,19 @@ def get_result(payments):
     """Достаем нужные поля по каждой оплате"""
     result_payments = []
     for payment in payments:
-        # добавить проверку на дубликаты docId
-        name = None
-        countract_numbers = None
-        crAmount = payment.get('crAmount', None)
-        naznText = payment.get('naznText', None)
-        docId = payment.get('docId', None)
-        docDate = payment.get('docDate', None)
-        result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText, "name": name, "countract_numbers": countract_numbers})
-    # print(result_payments)
+        check_payment_duplicate = is_payment_in_txt(payment)
+        if check_payment_duplicate is False:
+            docId = payment.get('docId', None)
+            crAmount = payment.get('crAmount', None)
+            naznText = payment.get('naznText', None)
+            docDate = payment.get('docDate', None)
+            name = None
+            countract_numbers = None
+            result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText, "name": name, "countract_numbers": countract_numbers})     
+            # print(result_payments)
+        else:
+            continue
+    payment_write_in_txt(result_payments)
     return result_payments
 
 
