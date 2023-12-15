@@ -1,8 +1,5 @@
 requests
-selenium
 jsonpath-ng
 python-dotenv
-pyppeteer
-pyyaml  
-ua-parser
-user-agents
+datetime
+schedule

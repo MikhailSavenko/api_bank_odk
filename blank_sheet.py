@@ -34,11 +34,13 @@ def get_auth_sid():
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"'
     }
-    
     response = session.post(url, headers=headers, data=payload)
-    auth_sid = response.cookies.get('auth_sid')
-    print(f'SID получен: {auth_sid}')
-    return auth_sid
+    if response.ok:
+        auth_sid = response.cookies.get('auth_sid')
+        print(f'SID получен: {auth_sid}')
+        return auth_sid
+    else:
+        return None
 
 
 def get_client_id(auth_sid):
@@ -103,6 +105,7 @@ def main_blank_sheet():
         if client_id:
             user_session = authenticate_user(auth_sid, client_id, TOKEN)
             return user_session
+    return None
 
 
 if __name__ == "__main__":
