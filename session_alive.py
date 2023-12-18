@@ -1,26 +1,22 @@
 import requests
-# from blank_sheet import user_session
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 
 TOKEN = os.environ.get('TOKEN')
-user_session = "0C7369FF26A11C53E063118A16ACCD92"
-headers = {
-    "Authorization": f"Bearer {TOKEN}",
-    "Content-Type": "application/json",
-}
 
-data = {
-    "IsSessionAlive": {
+def session_alive(user_session):
+    url = "https://ulapi.bgpb.by:8243/wso2_session/isalive/v1.1"
+    headers = {
+        "Authorization": f"Bearer {TOKEN}",
+        "Content-Type": "application/json",
+    } 
+    data = {
+        "IsSessionAlive": {
         "userSession": f"{user_session}"
+        }
     }
-}
-url = "https://ulapi.bgpb.by:8243/wso2_session/isalive/v1.1"
-
-
-def session_alive(url, headers, data):
     response = requests.post(url=url, headers=headers, json=data)
     if response.ok:
         response_data = response.json()
@@ -30,6 +26,5 @@ def session_alive(url, headers, data):
             return False
     return False
 
-
-is_session_alive = session_alive(url, headers, data)
-print("Сессия активна:", is_session_alive)
+# result = session_alive()
+# print(result)
