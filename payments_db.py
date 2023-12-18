@@ -1,19 +1,32 @@
 import json
 
 
-def is_payment_in_txt(payment_to_check):
-    file_path = "payments.txt"
-    with open(file_path, 'r') as file:
-        for line in file:
-            payment_data = json.loads(line)
-            if payment_data == payment_to_check:
-                return True
+def is_payment_in_txt(account, payment_to_check):
+    if account == 'BY37OLMP30130001086900000933':
+        account = 'window'
+    elif account == 'BY47OLMP30130009044450000933':
+        account = 'ceiling'
+        
+    file_path = f"{account}payments.txt"
+    try:
+        with open(file_path, 'r') as file:
+            for line in file:
+                payment_data = json.loads(line)
+                if payment_data == payment_to_check:
+                    return True
+    except FileNotFoundError:
+        return False
     return False
 
 
-def payment_write_in_txt(result_payments):
-    file_path = "payments.txt"
-    payment_data_str = json.dumps(result_payments)
-    with open(file_path, 'w') as file:
+def payment_write_in_txt(account, result_payments):
+    if account == 'BY37OLMP30130001086900000933':
+        account = 'window'
+    elif account == 'BY47OLMP30130009044450000933':
+        account = 'ceiling'
+
+    file_path = f"{account}payments.txt"
+    payment_data_str = json.dumps(result_payments, ensure_ascii=False)
+    with open(file_path, 'w', newline='',encoding="utf-8") as file:
         file.write(payment_data_str)
     return payment_data_str
