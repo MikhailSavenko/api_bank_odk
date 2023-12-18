@@ -29,7 +29,7 @@ def authorization():
 
 
 def process_data():
-    """"Вызываем файл получения выписки"""
+    """Вызываем файл получения выписки"""
     global user_session
     time_start = datetime.time(8, 00, 00)
     time1 = f'T{time_start}'+'+03:00'
