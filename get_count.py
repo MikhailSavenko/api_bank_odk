@@ -68,6 +68,7 @@ def get_result(payments, account):
             crAmount = payment.get('crAmount', None)
             naznText = payment.get('naznText', None)
             docDate = payment.get('docDate', None)
+            # место для функции парсинга naznText
             name = None
             countract_numbers = None
             result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText, "name": name, "countract_numbers": countract_numbers})     

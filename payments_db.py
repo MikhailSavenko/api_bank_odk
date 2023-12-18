@@ -9,7 +9,7 @@ def is_payment_in_txt(account, payment_to_check):
         
     file_path = f"{account}payments.txt"
     try:
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding="utf-8") as file:
             for line in file:
                 payment_data = json.loads(line)
                 if payment_data == payment_to_check:

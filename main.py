@@ -76,8 +76,8 @@ def process_data():
         
 
 if __name__ == "__main__":
-    schedule.every().day.at("13:10").do(authorization)
-    schedule.every().day.at("13:11").do(process_data)
+    schedule.every().day.at("14:39").do(authorization)
+    schedule.every().day.at("14:40").do(process_data)
 
     while True:
         schedule.run_pending()
