@@ -6,7 +6,8 @@ import datetime
 import time
 import schedule
 from configs import configure_logging
-from parse_naznText import parse_naznText
+from parse_and_hook import parse_naznText, post_webhook
+import logging
 
 BANK_ACCOUNT_WINDOW = 'BY37OLMP30130001086900000933'
 BANK_ACCOUNT_CEILING = 'BY47OLMP30130009044450000933'
@@ -43,7 +44,10 @@ def process_data():
     go_main_get_count_window = main_get_count(user_session, BANK_ACCOUNT_WINDOW, DATE_FROM, DATE_TO)
     print(go_main_get_count_window)
     # запускаем функцию парсинга и затем вебхук окна
-    parse_naznText(go_main_get_count_window, BANK_ACCOUNT_WINDOW)
+    parse = parse_naznText(go_main_get_count_window, BANK_ACCOUNT_WINDOW)
+    logging.info(f'Выгрузка окон произошла, парсинг выполнен, готово к хуку {parse}')
+    post_webhook(parse)
+    logging.info(f'Вебхук окна отправлен')
     # получаем выписки счет потолки
     go_main_get_count_ceiling = main_get_count(user_session, BANK_ACCOUNT_CEILING, DATE_FROM, DATE_TO)
     print(go_main_get_count_ceiling)
@@ -79,8 +83,8 @@ def process_data():
 
 if __name__ == "__main__":
     configure_logging()
-    schedule.every().day.at("16:50").do(authorization)
-    schedule.every().day.at("16:51").do(process_data)
+    schedule.every().day.at("18:42").do(authorization)
+    schedule.every().day.at("18:43").do(process_data)
     while True:
         schedule.run_pending()
         time.sleep(1)

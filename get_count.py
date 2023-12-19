@@ -61,6 +61,7 @@ def extract_credit_amount(response_extract_data):
 
 def get_result(payments, account):
     """Достаем нужные поля по каждой оплате"""
+    result_payments_for_txt = []
     result_payments = []
     for payment in payments:
         if not is_payment_in_txt(account, payment):
@@ -68,8 +69,9 @@ def get_result(payments, account):
             crAmount = payment.get('crAmount', None)
             naznText = payment.get('naznText', None)
             docDate = payment.get('docDate', None)
+            result_payments_for_txt.append(payment)
             result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText})     
-    payment_write_in_txt(account, payments)
+    payment_write_in_txt(account, result_payments_for_txt)
     return result_payments
 
 
