@@ -3,4 +3,3 @@ jsonpath-ng
 python-dotenv
 datetime
 schedule
-pandas

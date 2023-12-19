@@ -5,6 +5,8 @@ from session_alive import session_alive
 import datetime
 import time
 import schedule
+from configs import configure_logging
+from parse_naznText import parse_naznText
 
 BANK_ACCOUNT_WINDOW = 'BY37OLMP30130001086900000933'
 BANK_ACCOUNT_CEILING = 'BY47OLMP30130009044450000933'
@@ -41,7 +43,7 @@ def process_data():
     go_main_get_count_window = main_get_count(user_session, BANK_ACCOUNT_WINDOW, DATE_FROM, DATE_TO)
     print(go_main_get_count_window)
     # запускаем функцию парсинга и затем вебхук окна
-    ...
+    parse_naznText(go_main_get_count_window, BANK_ACCOUNT_WINDOW)
     # получаем выписки счет потолки
     go_main_get_count_ceiling = main_get_count(user_session, BANK_ACCOUNT_CEILING, DATE_FROM, DATE_TO)
     print(go_main_get_count_ceiling)
@@ -76,9 +78,9 @@ def process_data():
         
 
 if __name__ == "__main__":
-    schedule.every().day.at("14:39").do(authorization)
-    schedule.every().day.at("14:40").do(process_data)
-
+    configure_logging()
+    schedule.every().day.at("16:50").do(authorization)
+    schedule.every().day.at("16:51").do(process_data)
     while True:
         schedule.run_pending()
         time.sleep(1)

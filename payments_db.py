@@ -10,10 +10,9 @@ def is_payment_in_txt(account, payment_to_check):
     file_path = f"{account}payments.txt"
     try:
         with open(file_path, 'r', encoding="utf-8") as file:
-            for line in file:
-                payment_data = json.loads(line)
-                if payment_data == payment_to_check:
-                    return True
+            payments_data = json.load(file)
+            if payment_to_check in payments_data:
+                return True
     except FileNotFoundError:
         return False
     return False
@@ -27,6 +26,6 @@ def payment_write_in_txt(account, result_payments):
 
     file_path = f"{account}payments.txt"
     payment_data_str = json.dumps(result_payments, ensure_ascii=False)
-    with open(file_path, 'w', newline='',encoding="utf-8") as file:
+    with open(file_path, 'w', encoding="utf-8") as file:
         file.write(payment_data_str)
     return payment_data_str

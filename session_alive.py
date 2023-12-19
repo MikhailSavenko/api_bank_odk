@@ -6,6 +6,7 @@ load_dotenv()
 
 TOKEN = os.environ.get('TOKEN')
 
+
 def session_alive(user_session):
     url = "https://ulapi.bgpb.by:8243/wso2_session/isalive/v1.1"
     headers = {
@@ -25,6 +26,3 @@ def session_alive(user_session):
         else:
             return False
     return False
-
-# result = session_alive()
-# print(result)

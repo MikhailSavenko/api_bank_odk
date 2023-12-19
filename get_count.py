@@ -68,14 +68,9 @@ def get_result(payments, account):
             crAmount = payment.get('crAmount', None)
             naznText = payment.get('naznText', None)
             docDate = payment.get('docDate', None)
-            # место для функции парсинга naznText
-            # удалить name и number вероятнее всего включать парс будем из main 
-            name = None
-            countract_numbers = None
-            result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText, "name": name, "countract_numbers": countract_numbers})     
-    payment_write_in_txt(account, result_payments)
+            result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText})     
+    payment_write_in_txt(account, payments)
     return result_payments
-
 
 
 def main_get_count(user_session, account, DATE_FROM, DATE_TO):
