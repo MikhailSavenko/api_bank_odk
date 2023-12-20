@@ -70,9 +70,12 @@ def get_result(payments, account):
             naznText = payment.get('naznText', None)
             docDate = payment.get('docDate', None)
             result_payments_for_txt.append(payment)
-            result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText})     
-    payment_write_in_txt(account, result_payments_for_txt)
-    return result_payments
+            result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText})
+    if not result_payments_for_txt:
+        return result_payments
+    else:
+        payment_write_in_txt(account, result_payments_for_txt)
+        return result_payments
 
 
 def main_get_count(user_session, account, DATE_FROM, DATE_TO):

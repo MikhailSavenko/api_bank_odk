@@ -30,14 +30,13 @@ def parse_naznText(result_payments, account):
             'amount': payment['crAmount']
 
         })
-    logging.info(f'Готово к вебхуку {extracted_data}')
-    print(extracted_data)
     return extracted_data
 
 
 def post_webhook(extracted_data):
     bitrix_url = "https://crm.okna-ori.by/rest/1/5rqi5834zubf0jjj/crm.item.add?entityTypeId=163"
     success_count = 0
+    failed_transactions = []
     try:
         for payment in extracted_data:
             payload = {
@@ -52,12 +51,14 @@ def post_webhook(extracted_data):
             response = requests.post(bitrix_url, data=payload)
 
             if response.ok:
-                logging.info('Сделка успешно добавлена в Битрикс')
                 success_count += 1
-                return True
             else:
                 logging.error(f'Ошибка при добавлении сделки в Битрикс: {response.status_code}')
+        logging.info('Сделки успешно добавлены в Битрикс')
+        if failed_transactions:
+            logging.warning(f'Не удалось добавить следующие сделки: {failed_transactions}')
         return success_count == len(extracted_data)
+    
     except requests.RequestException as e:
         logging.error(f'Ошибка сетевого запроса: {e}')
         return False

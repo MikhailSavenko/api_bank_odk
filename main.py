@@ -12,6 +12,7 @@ import logging
 BANK_ACCOUNT_WINDOW = 'BY37OLMP30130001086900000933'
 BANK_ACCOUNT_CEILING = 'BY47OLMP30130009044450000933'
 user_session = None
+SLEEP = 60*5
 
 
 def authorization():
@@ -34,57 +35,69 @@ def authorization():
 def process_data():
     """Вызываем файл получения выписки"""
     global user_session
-    time_start = datetime.time(8, 00, 00)
+    time_start = datetime.time(17, 54, 0)
     time1 = f'T{time_start}'+'+03:00'
     date = f'{datetime.datetime.now().date()}'
-    # здесь лежит дата и время последней выгрузки окон
-    DATE_FROM = f"{datetime.datetime.now().date() - datetime.timedelta(days=1)}T19:00:00+03:00"
+    
+    DATE_FROM = f"{datetime.datetime.now().date() - datetime.timedelta(days=1)}T18:50:00+03:00"
+    logging.info(f'date from {DATE_FROM}')
     DATE_TO = date + time1
-    # получаем выписки счет окна
+    logging.info(f'date to {DATE_TO}')
+    
     go_main_get_count_window = main_get_count(user_session, BANK_ACCOUNT_WINDOW, DATE_FROM, DATE_TO)
-    print(go_main_get_count_window)
-    # запускаем функцию парсинга и затем вебхук окна
+    logging.info('Получена Первая за день выписка по окнам')
     parse = parse_naznText(go_main_get_count_window, BANK_ACCOUNT_WINDOW)
     logging.info(f'Выгрузка окон произошла, парсинг выполнен, готово к хуку {parse}')
     post_webhook(parse)
     logging.info(f'Вебхук окна отправлен')
-    # получаем выписки счет потолки
-    go_main_get_count_ceiling = main_get_count(user_session, BANK_ACCOUNT_CEILING, DATE_FROM, DATE_TO)
-    print(go_main_get_count_ceiling)
-    # запускаем функцию парсинга и затем вебхук потолки
-    ...
-    DATE_FROM = DATE_TO
-    # спим 15 минут далее продлеваем сессию и спим еще 15 минут
-    time.sleep(15)
-    # вызов функции продления сессии 
-    session_alive(user_session)
-    time.sleep(15)
 
-    while DATE_TO != date + 'T19:00:00+03:00':
-        DATE_TO = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S%z") + "+03:00"
-        # получаем выписки счет окна
-        go_main_get_count_window = main_get_count(user_session, BANK_ACCOUNT_WINDOW, DATE_FROM, DATE_TO)
-        print(go_main_get_count_window)
-        # запускаем функцию парсинга и затем вебхук окна
-        ...
-        # получаем выписки счет потолки
-        go_main_get_count_ceiling = main_get_count(user_session, BANK_ACCOUNT_CEILING, DATE_FROM, DATE_TO)
-        print(go_main_get_count_ceiling)
-        # запускаем функцию парсинга и затем вебхук потолки
-        ...
+    go_main_get_count_ceiling = main_get_count(user_session, BANK_ACCOUNT_CEILING, DATE_FROM, DATE_TO)
+    logging.info('Получена Первая за день выписка по потолкам')
+    parse = parse_naznText(go_main_get_count_ceiling, BANK_ACCOUNT_CEILING)
+    logging.info(f'Выгрузка потолков произошла, парсинг выполнен, готово к хуку {parse}')
+    post_webhook(parse)
+    logging.info(f'Вебхук потолки отправлен')
+   
+    time.sleep(SLEEP)
+    
+    session_on = session_alive(user_session)
+    logging.info(f'Сессия продлена {session_on}')
+
+    time.sleep(SLEEP)
+    
+    max_iterations = 22
+    iteration_count = 0
+    while iteration_count != max_iterations:
         DATE_FROM = DATE_TO
-        # спим 15 минут далее продлеваем сессию
-        time.sleep(15)
-        # вызов функции продления сессии 
-        session_alive(user_session)
-        # спим еще 15 минут
-        time.sleep(15)
+        logging.info(f'date from {DATE_FROM}')
+        DATE_TO = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S%z") + "+03:00"
+        logging.info(f'date to {DATE_TO}')
+        go_main_get_count_window = main_get_count(user_session, BANK_ACCOUNT_WINDOW, DATE_FROM, DATE_TO)
+        logging.info('Получена выписка окна(цикл)')
+        parse = parse_naznText(go_main_get_count_window, BANK_ACCOUNT_WINDOW)
+        logging.info(f'Парсинг выполнен, готово к хуку(цикл) {parse}')
+        post_webhook(parse)
+        logging.info(f'Вебхук окна отправлен(цикл)')
         
+        go_main_get_count_ceiling = main_get_count(user_session, BANK_ACCOUNT_CEILING, DATE_FROM, DATE_TO)
+        logging.info('Получена выписка потолки(цикл)')
+        parse = parse_naznText(go_main_get_count_ceiling, BANK_ACCOUNT_CEILING)
+        logging.info(f'Парсинг выполнен, готово к хуку(цикл) {parse}')
+        post_webhook(parse)
+        logging.info(f'Вебхук потолки отправлен(цикл)')
+        
+        time.sleep(SLEEP)
+
+        session_on = session_alive(user_session)
+        logging.info(f'Сессия продлена {session_on}')
+
+        time.sleep(SLEEP)
+
 
 if __name__ == "__main__":
     configure_logging()
-    schedule.every().day.at("18:42").do(authorization)
-    schedule.every().day.at("18:43").do(process_data)
+    schedule.every().day.at("17:53").do(authorization)
+    schedule.every().day.at("17:54").do(process_data)
     while True:
         schedule.run_pending()
         time.sleep(1)
