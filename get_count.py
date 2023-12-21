@@ -3,6 +3,7 @@ from jsonpath_ng import parse
 from dotenv import load_dotenv
 import os
 from payments_db import is_payment_in_txt, payment_write_in_txt
+import logging
 
 load_dotenv()
 
@@ -41,11 +42,9 @@ def get_bank_statement(user_session, account, DATE_FROM, DATE_TO):
 
     if response.status_code == 200:
         statement = response.json()
-        # print(statement)
         return statement
     else:
-        print("Ошибка при получении выписки по счетам:", response.status_code)
-        print(response.json())
+        logging.error(f"Ошибка при получении выписки по счетам код:{response.status_code}, json ответ: {response.json()}")
         return None
 
 
@@ -55,7 +54,7 @@ def extract_credit_amount(response_extract_data):
     matches = [match.value for match in jsonpath_expr.find(response_extract_data)]
 
     cr_amount = [i for i in matches if float(i['crAmount']) > 0]
-    print(len(cr_amount))
+    logging.info(f'Количество оплат всего пришло: {len(cr_amount)}')
     return cr_amount
 
 
@@ -72,9 +71,11 @@ def get_result(payments, account):
             result_payments_for_txt.append(payment)
             result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText})
     if not result_payments_for_txt:
+        logging.info('Проверка на дубликаты. Новых оплат нет')
         return result_payments
     else:
         payment_write_in_txt(account, result_payments_for_txt)
+        logging.info('Проверка на дубликаты. Новые оплаты есть. Обновлен архив.')
         return result_payments
 
 

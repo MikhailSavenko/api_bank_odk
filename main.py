@@ -12,7 +12,7 @@ import logging
 BANK_ACCOUNT_WINDOW = 'BY37OLMP30130001086900000933'
 BANK_ACCOUNT_CEILING = 'BY47OLMP30130009044450000933'
 user_session = None
-SLEEP = 60*5
+SLEEP = 60*10
 
 
 def authorization():
@@ -35,7 +35,7 @@ def authorization():
 def process_data():
     """Вызываем файл получения выписки"""
     global user_session
-    time_start = datetime.time(17, 54, 0)
+    time_start = datetime.time(10, 40, 0)
     time1 = f'T{time_start}'+'+03:00'
     date = f'{datetime.datetime.now().date()}'
     
@@ -46,17 +46,25 @@ def process_data():
     
     go_main_get_count_window = main_get_count(user_session, BANK_ACCOUNT_WINDOW, DATE_FROM, DATE_TO)
     logging.info('Получена Первая за день выписка по окнам')
-    parse = parse_naznText(go_main_get_count_window, BANK_ACCOUNT_WINDOW)
-    logging.info(f'Выгрузка окон произошла, парсинг выполнен, готово к хуку {parse}')
-    post_webhook(parse)
-    logging.info(f'Вебхук окна отправлен')
+    if not go_main_get_count_window:
+        logging.info('Отправлять окна нечего')
+        pass
+    else:
+        parse = parse_naznText(go_main_get_count_window, BANK_ACCOUNT_WINDOW)
+        logging.info(f'Выгрузка окон произошла, парсинг выполнен, готово к хуку {parse}')
+        post_webhook(parse)
+        logging.info(f'Вебхук окна отправлен')
 
     go_main_get_count_ceiling = main_get_count(user_session, BANK_ACCOUNT_CEILING, DATE_FROM, DATE_TO)
     logging.info('Получена Первая за день выписка по потолкам')
-    parse = parse_naznText(go_main_get_count_ceiling, BANK_ACCOUNT_CEILING)
-    logging.info(f'Выгрузка потолков произошла, парсинг выполнен, готово к хуку {parse}')
-    post_webhook(parse)
-    logging.info(f'Вебхук потолки отправлен')
+    if not go_main_get_count_ceiling:
+        logging.info('Отправлять потолки нечего')
+        pass
+    else:
+        parse = parse_naznText(go_main_get_count_ceiling, BANK_ACCOUNT_CEILING)
+        logging.info(f'Выгрузка потолков произошла, парсинг выполнен, готово к хуку {parse}')
+        post_webhook(parse)
+        logging.info(f'Вебхук потолки отправлен')
    
     time.sleep(SLEEP)
     
@@ -72,19 +80,28 @@ def process_data():
         logging.info(f'date from {DATE_FROM}')
         DATE_TO = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S%z") + "+03:00"
         logging.info(f'date to {DATE_TO}')
+        
         go_main_get_count_window = main_get_count(user_session, BANK_ACCOUNT_WINDOW, DATE_FROM, DATE_TO)
         logging.info('Получена выписка окна(цикл)')
-        parse = parse_naznText(go_main_get_count_window, BANK_ACCOUNT_WINDOW)
-        logging.info(f'Парсинг выполнен, готово к хуку(цикл) {parse}')
-        post_webhook(parse)
-        logging.info(f'Вебхук окна отправлен(цикл)')
+        if not go_main_get_count_window:
+            logging.info('Отправлять окна нечего')
+            pass
+        else:
+            parse = parse_naznText(go_main_get_count_window, BANK_ACCOUNT_WINDOW)
+            logging.info(f'Парсинг выполнен, готово к хуку(цикл) {parse}')
+            post_webhook(parse)
+            logging.info(f'Вебхук окна отправлен(цикл)')
         
         go_main_get_count_ceiling = main_get_count(user_session, BANK_ACCOUNT_CEILING, DATE_FROM, DATE_TO)
         logging.info('Получена выписка потолки(цикл)')
-        parse = parse_naznText(go_main_get_count_ceiling, BANK_ACCOUNT_CEILING)
-        logging.info(f'Парсинг выполнен, готово к хуку(цикл) {parse}')
-        post_webhook(parse)
-        logging.info(f'Вебхук потолки отправлен(цикл)')
+        if not go_main_get_count_ceiling:
+            logging.info('Отправлять потолки нечего')
+            pass
+        else:
+            parse = parse_naznText(go_main_get_count_ceiling, BANK_ACCOUNT_CEILING)
+            logging.info(f'Парсинг выполнен, готово к хуку(цикл) {parse}')
+            post_webhook(parse)
+            logging.info(f'Вебхук потолки отправлен(цикл)')
         
         time.sleep(SLEEP)
 
@@ -96,8 +113,8 @@ def process_data():
 
 if __name__ == "__main__":
     configure_logging()
-    schedule.every().day.at("17:53").do(authorization)
-    schedule.every().day.at("17:54").do(process_data)
+    schedule.every().day.at("10:39").do(authorization)
+    schedule.every().day.at("10:40").do(process_data)
     while True:
         schedule.run_pending()
         time.sleep(1)

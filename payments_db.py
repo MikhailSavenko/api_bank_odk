@@ -18,7 +18,8 @@ def is_payment_in_txt(account, payment_to_check):
     return False
 
 
-def payment_write_in_txt(account, result_payments):
+def payment_write_in_txt_w(account, result_payments):
+    """Перезаписываем оплаты за день"""
     if account == 'BY37OLMP30130001086900000933':
         account = 'window'
     elif account == 'BY47OLMP30130009044450000933':
@@ -27,5 +28,19 @@ def payment_write_in_txt(account, result_payments):
     file_path = f"{account}payments.txt"
     payment_data_str = json.dumps(result_payments, ensure_ascii=False)
     with open(file_path, 'w', encoding="utf-8") as file:
+        file.write(payment_data_str)
+    return payment_data_str
+
+
+def payment_write_in_txt_a(account, result_payments):
+    """Добавляем оплаты за день"""
+    if account == 'BY37OLMP30130001086900000933':
+        account = 'window'
+    elif account == 'BY47OLMP30130009044450000933':
+        account = 'ceiling'
+
+    file_path = f"{account}payments.txt"
+    payment_data_str = json.dumps(result_payments, ensure_ascii=False)
+    with open(file_path, 'a', encoding="utf-8") as file:
         file.write(payment_data_str)
     return payment_data_str

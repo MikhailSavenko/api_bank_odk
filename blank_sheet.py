@@ -2,6 +2,7 @@ import requests
 from dotenv import load_dotenv
 import os
 import time
+import logging
 
 load_dotenv()
 
@@ -37,7 +38,7 @@ def get_auth_sid():
     response = session.post(url, headers=headers, data=payload)
     if response.ok:
         auth_sid = response.cookies.get('auth_sid')
-        print(f'SID получен: {auth_sid}')
+        logging.info(f'SID получен: {auth_sid}')
         return auth_sid
     else:
         return None
@@ -61,12 +62,10 @@ def get_client_id(auth_sid):
 
     if response.status_code == 200:
         client_id = response.json().get('result', {}).get('clientList', [{}])[0].get('clientId')
-        print(client_id)
-        print(f'Ответ json: {response.json()}')
+        logging.info(f"Получен clientId {client_id}")
         return client_id
     else:
-        print("Ошибка при запросе:", response.status_code)
-        print(f'Ответ json: {response.json()}')
+        logging.error(f"Ошибка при запросе получения clientId статус:{response.status_code}, ответ json: {response.json()}")
         return None
     
 
@@ -91,10 +90,9 @@ def authenticate_user(auth_sid, client_id, token):
 
     if response_login.status_code == 200:
         user_session = response_login.json()["result"]["userSession"]
-        print(f'Успешная авторизация. UserSession: {user_session}')
+        logging.info(f'Успешная авторизация. UserSession: {user_session}')
         return user_session
-    print(f"Ошибка авторизации статус код: {response_login.status_code}")
-    print(response_login.json())
+    logging.error(f"Ошибка авторизации статус код: {response_login.status_code}, ответ json: {response_login.json()}")
     return None
 
 
