@@ -2,7 +2,7 @@ import requests
 from jsonpath_ng import parse
 from dotenv import load_dotenv
 import os
-from payments_db import is_payment_in_txt, payment_write_in_txt
+from payments_db import is_payment_in_txt
 import logging
 
 load_dotenv()
@@ -60,24 +60,19 @@ def extract_credit_amount(response_extract_data):
 
 def get_result(payments, account):
     """Достаем нужные поля по каждой оплате"""
-    result_payments_for_txt = []
+    result_payments_not_dubble = []
     result_payments = []
     for payment in payments:
-        if not is_payment_in_txt(account, payment):
-            docId = payment.get('docId', None)
-            crAmount = payment.get('crAmount', None)
-            naznText = payment.get('naznText', None)
-            docDate = payment.get('docDate', None)
-            result_payments_for_txt.append(payment)
-            result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText})
-    if not result_payments_for_txt:
-        logging.info('Проверка на дубликаты. Новых оплат нет')
-        return result_payments
-    else:
-        payment_write_in_txt(account, result_payments_for_txt)
-        logging.info('Проверка на дубликаты. Новые оплаты есть. Обновлен архив.')
-        return result_payments
-
+        docId = payment.get('docId', None)
+        crAmount = payment.get('crAmount', None)
+        naznText = payment.get('naznText', None)
+        docDate = payment.get('docDate', None)
+        result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText})
+    for payment_duble in result_payments:
+        if not is_payment_in_txt(account, payment_duble):
+            result_payments_not_dubble.append(payment_duble)
+    return result_payments_not_dubble
+    
 
 def main_get_count(user_session, account, DATE_FROM, DATE_TO):
     result_get_bank_statement = get_bank_statement(user_session, account, DATE_FROM, DATE_TO)

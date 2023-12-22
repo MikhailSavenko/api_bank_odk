@@ -7,7 +7,7 @@ import requests
 def parse_naznText(result_payments, account):
     extracted_data = []
     # Регулярное выражение для номера договора/счета
-    contract_account_pattern = r'\b(?!(?:2022|2023|00000|2024)\b)\d{4,6}(?![/])\b'
+    contract_account_pattern = r'\b(?!(?:200[0-9]|201[0-4]|202[0-4]|00000)\b)N?(\d{4,6})(?![/])\b'
     for payment in result_payments:
         description = payment['naznText']
 

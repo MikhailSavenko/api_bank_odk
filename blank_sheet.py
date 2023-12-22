@@ -8,8 +8,6 @@ load_dotenv()
 
 PAYLOAD = os.environ.get('PAYLOAD')
 TOKEN = os.environ.get('TOKEN')
-BANK_ACCOUNT_WINDOW = 'BY37OLMP30130001086900000933'
-BANK_ACCOUNT_CEILING = 'BY47OLMP30130009044450000933'
 
 session = requests.Session()
 
