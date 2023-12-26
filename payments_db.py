@@ -20,6 +20,9 @@ def is_payment_in_txt(account, payment_to_check):
 
 def payment_write_in_txt_w(account, result_payments):
     """Создает новый пустой файл"""
+    # Новая проверка, чтобы не записывался null
+    if result_payments is None or not result_payments:
+        result_payments = []
     if account == 'BY37OLMP30130001086900000933':
         account = 'window'
     elif account == 'BY47OLMP30130009044450000933':
