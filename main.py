@@ -125,8 +125,8 @@ class ApiBankOkd():
 if __name__ == "__main__":
     configure_logging()
     api_instance = ApiBankOkd()
-    schedule.every().day.at("12:08").do(api_instance.authorization)
-    schedule.every().day.at("12:08").do(api_instance.process_data)
+    schedule.every().day.at("11:43").do(api_instance.authorization)
+    schedule.every().day.at("11:43").do(api_instance.process_data)
 
     while True:
         schedule.run_pending()
