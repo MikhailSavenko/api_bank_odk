@@ -11,7 +11,6 @@ from get_count import main_get_count
 from configs import configure_logging
 from parse_and_hook import parse_naznText, post_webhook
 from payments_db import payment_write_in_txt_a, payment_write_in_txt_w
-from exceptions import SessionExpiredError
 import logging
 
 load_dotenv()
@@ -54,9 +53,11 @@ class ApiBankOkd():
         if response.ok:
             response_data = response.json()
             if response_data.get('success') == 'true' and response_data.get('result') is True:
+                logging.info('Сессия продлена(лог в session_alive) True')
                 return True
             else:
-                raise SessionExpiredError("Сессия не продлена")
+                logging.info('Сессия не продлена(лог в session_alive) False')
+                return False
         return False
     
     def get_account_statements(self, payment_write, account, date):
@@ -71,7 +72,7 @@ class ApiBankOkd():
             logging.info(f'Проверка на дубликаты выполнена. Есть новые зачисления. Кол-во: {len(go_main_get_count)}')
             payment_write(account, go_main_get_count)
             logging.info('Архив обновлен')
-            parse = parse_naznText(go_main_get_count, account)
+            parse = parse_naznText(go_main_get_count, account, self.user_session, date, date)
             logging.info(f'Парсинг данных выполнен, готово к вебхуку {parse}')
             post_webhook(parse)
 
@@ -92,13 +93,18 @@ class ApiBankOkd():
     
         time.sleep(SLEEP)
 
-        try:
-            self.session_alive()
+        sessia = self.session_alive()
+        if sessia:
             logging.info('Сессия продлена')
-        except SessionExpiredError:
-            self.authorization()
-            logging.error(f'Сессия не продлена {SessionExpiredError}. Выполняется авторизация!')
-            
+        else:
+            logging.error(f'Сессия не продлена. Выполняется авторизация!')
+            new_session = self.authorization()
+            if new_session:
+                self.user_session = new_session
+                logging.info('Сессия обновлена')
+            else:
+                logging.error(f'Обновить сессию не удалось')
+                
         time.sleep(SLEEP)
 
         iteration_count = 0
@@ -112,12 +118,17 @@ class ApiBankOkd():
         
             time.sleep(SLEEP)
 
-            try:
-                self.session_alive()
+            sessia = self.session_alive()
+            if sessia:
                 logging.info('Сессия продлена')
-            except SessionExpiredError:
-                self.authorization()
-                logging.error(f'Сессия не продлена {SessionExpiredError}. Выполняется авторизация!')
+            else:
+                logging.error(f'Сессия не продлена. Выполняется авторизация!')
+                new_session = self.authorization()
+                if new_session:
+                    self.user_session = new_session
+                    logging.info('Сессия обновлена')
+                else:
+                    logging.error(f'Обновить сессию не удалось')
                 
             time.sleep(SLEEP)
 
@@ -125,8 +136,8 @@ class ApiBankOkd():
 if __name__ == "__main__":
     configure_logging()
     api_instance = ApiBankOkd()
-    schedule.every().day.at("11:43").do(api_instance.authorization)
-    schedule.every().day.at("11:43").do(api_instance.process_data)
+    schedule.every().day.at("10:53").do(api_instance.authorization)
+    schedule.every().day.at("10:53").do(api_instance.process_data)
 
     while True:
         schedule.run_pending()

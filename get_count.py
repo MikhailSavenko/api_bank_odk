@@ -5,6 +5,7 @@ import os
 from payments_db import is_payment_in_txt
 import logging
 
+
 load_dotenv()
 
 PAYLOAD = os.environ.get('PAYLOAD')

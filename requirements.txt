@@ -3,3 +3,5 @@ jsonpath-ng
 python-dotenv
 datetime
 schedule
+chardet
+PyPDF2
