@@ -65,7 +65,7 @@ class ApiBankOkd():
         if not go_main_get_count:
             if payment_write == payment_write_in_txt_w:
                 payment_write(account, go_main_get_count)
-                logging.info('Архив прошлого дня очищен')
+                logging.info(f'Новый архив создан')
             logging.info('Проверка на дубликаты выполнена. Новых зачислений нет')
             pass
         else:
@@ -136,8 +136,8 @@ class ApiBankOkd():
 if __name__ == "__main__":
     configure_logging()
     api_instance = ApiBankOkd()
-    schedule.every().day.at("10:53").do(api_instance.authorization)
-    schedule.every().day.at("10:53").do(api_instance.process_data)
+    schedule.every().day.at("12:01").do(api_instance.authorization)
+    schedule.every().day.at("12:01").do(api_instance.process_data)
 
     while True:
         schedule.run_pending()
