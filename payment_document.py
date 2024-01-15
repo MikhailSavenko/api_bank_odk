@@ -86,6 +86,7 @@ def get_payments_from_pdf(file_name):
             if match:
                 if previous_line:
                     name = (previous_line + (' ') + match.group('name')).strip()
+                    previous_line = None
                 else:
                     name = match.group('name').strip()
                 amount = float(match.group('amount'))

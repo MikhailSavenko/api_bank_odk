@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 from payments_db import is_payment_in_txt
 import logging
+from exeptions import ExeptionSSOClose
 
 
 load_dotenv()
@@ -44,9 +45,9 @@ def get_bank_statement(user_session, account, DATE_FROM, DATE_TO):
     if response.status_code == 200:
         statement = response.json()
         return statement
-    else:
+    elif response.status_code == 500:
         logging.error(f"Ошибка при получении выписки по счетам код:{response.status_code}, json ответ: {response.json()}")
-        return None
+        raise ExeptionSSOClose
 
 
 def extract_credit_amount(response_extract_data):
@@ -76,12 +77,16 @@ def get_result(payments, account):
     
 
 def main_get_count(user_session, account, DATE_FROM, DATE_TO):
-    result_get_bank_statement = get_bank_statement(user_session, account, DATE_FROM, DATE_TO)
-    if result_get_bank_statement:
-        result_extract_credit_amount = extract_credit_amount(result_get_bank_statement)
-        if result_extract_credit_amount:
-            return get_result(result_extract_credit_amount, account)
-    return None
+    try:
+        result_get_bank_statement = get_bank_statement(user_session, account, DATE_FROM, DATE_TO)
+        if result_get_bank_statement:
+            result_extract_credit_amount = extract_credit_amount(result_get_bank_statement)
+            if result_extract_credit_amount:
+                return get_result(result_extract_credit_amount, account)
+        return None
+    except ExeptionSSOClose as e:
+        logging.error(f'Поймано исключение {e}. Требуется авторизация!')
+        return 'go'
 
 
 if __name__ == "__main__":

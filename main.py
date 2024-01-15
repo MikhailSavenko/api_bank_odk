@@ -30,8 +30,9 @@ class ApiBankOkd():
     def authorization(self):
         max_attempts = 7
         for i in range(max_attempts):
-            self.user_session = main_blank_sheet()
-            if self.user_session is not None:
+            user_session = main_blank_sheet()
+            if user_session:
+                self.user_session = user_session
                 return self.user_session
             else:
                 logging.warning("Не удалось авторизоваться на попытке", i + 1)
@@ -56,8 +57,14 @@ class ApiBankOkd():
                 logging.info('Сессия продлена(лог в session_alive) True')
                 return True
             else:
-                logging.info('Сессия не продлена(лог в session_alive) False')
-                return False
+                logging.info('Сессия не продлена(лог в session_alive) False. Выполняется авторизация!')
+                new_session = self.authorization()
+                if new_session:
+                    self.user_session = new_session
+                    logging.info('Сессия обновлена')
+                    return True
+                else:
+                    logging.error(f'Обновить сессию не удалось')
         return False
     
     def get_account_statements(self, payment_write, account, date):
@@ -68,6 +75,9 @@ class ApiBankOkd():
                 logging.info(f'Новый архив создан')
             logging.info('Проверка на дубликаты выполнена. Новых зачислений нет')
             pass
+        elif go_main_get_count == 'go':
+            self.authorization()
+            logging.info('Выполняется авторизация(go)')
         else:
             logging.info(f'Проверка на дубликаты выполнена. Есть новые зачисления. Кол-во: {len(go_main_get_count)}')
             payment_write(account, go_main_get_count)
@@ -93,17 +103,7 @@ class ApiBankOkd():
     
         time.sleep(SLEEP)
 
-        sessia = self.session_alive()
-        if sessia:
-            logging.info('Сессия продлена')
-        else:
-            logging.error(f'Сессия не продлена. Выполняется авторизация!')
-            new_session = self.authorization()
-            if new_session:
-                self.user_session = new_session
-                logging.info('Сессия обновлена')
-            else:
-                logging.error(f'Обновить сессию не удалось')
+        self.session_alive()
                 
         time.sleep(SLEEP)
 
@@ -118,17 +118,7 @@ class ApiBankOkd():
         
             time.sleep(SLEEP)
 
-            sessia = self.session_alive()
-            if sessia:
-                logging.info('Сессия продлена')
-            else:
-                logging.error(f'Сессия не продлена. Выполняется авторизация!')
-                new_session = self.authorization()
-                if new_session:
-                    self.user_session = new_session
-                    logging.info('Сессия обновлена')
-                else:
-                    logging.error(f'Обновить сессию не удалось')
+            self.session_alive()
                 
             time.sleep(SLEEP)
 
@@ -136,8 +126,8 @@ class ApiBankOkd():
 if __name__ == "__main__":
     configure_logging()
     api_instance = ApiBankOkd()
-    schedule.every().day.at("12:01").do(api_instance.authorization)
-    schedule.every().day.at("12:01").do(api_instance.process_data)
+    schedule.every().day.at("17:19").do(api_instance.authorization)
+    schedule.every().day.at("17:19").do(api_instance.process_data)
 
     while True:
         schedule.run_pending()
