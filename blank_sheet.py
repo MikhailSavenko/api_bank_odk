@@ -39,6 +39,7 @@ def get_auth_sid():
         logging.info(f'SID получен: {auth_sid}')
         return auth_sid
     else:
+        logging.error(f'Не удалос получить SID/ статус код {response.status_code}/ ответ json: {response.json()}')
         return None
 
 

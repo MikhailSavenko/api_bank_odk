@@ -3,9 +3,7 @@ from dotenv import load_dotenv
 import os
 import logging
 import base64
-import PyPDF2
-import re
-
+import pdfplumber
 
 load_dotenv()
 
@@ -57,7 +55,7 @@ def get_text_in_docs_base64(base64_response):
 
         decoded_data  = base64.b64decode(printForm)
 
-        with open(f"{file_name}.pdf", "wb") as file:
+        with open(file_name, "wb") as file:
             file.write(decoded_data)
         logging.info('Приложение pdf получено')
         return file_name
@@ -66,42 +64,36 @@ def get_text_in_docs_base64(base64_response):
         return None
 
 
+def cleaned_data(data):
+    cleaned_data_list = [[cell.replace('\n', ' ') for cell in row] for row in data]
+    return cleaned_data_list
+
+
+def extract_table(pdf_path):
+    pdf = pdfplumber.open(pdf_path)
+    table_page = pdf.pages[1]
+    data = table_page.extract_tables()[0]
+    table = cleaned_data(data)
+    pdf.close()
+    return table
+
+
 def get_payments_from_pdf(file_name):
     payments = []
-    previous_line = None
     try:
-        with open(f'{file_name}.pdf', "rb") as f:
-            pdf = PyPDF2.PdfReader(f)
-            page = pdf.pages[1]
-            text = page.extract_text()
-
-        lines = text.split('\n') 
-        lines = lines[6:-1]
-
-        pattern = re.compile(r'(?P<name>[\w\s]+?)(?=\s?\d+\.\d+)\s?(?P<amount>\d+\.\d+)\s+(?P<text>.+)')
-        
-        for line in lines:
-            print(line)
-            match = pattern.match(line)
-            if match:
-                if previous_line:
-                    name = (previous_line + (' ') + match.group('name')).strip()
-                    previous_line = None
-                else:
-                    name = match.group('name').strip()
-                amount = float(match.group('amount'))
-                text = match.group('text')
-                naznText = (name or "") + (' ') + (text or "")
-                payments.append((amount, naznText))
-            else:
-                previous_line = line
-                logging.info(f'Длинная ФИО. Обновлен параметр previous_line. К name будет добавлено часть {previous_line}')          
-        # os.remove(f'{file_name}.pdf')
-        logging.info(f'Вытянуты оплаты из pdf {payments}')
+        table = extract_table(file_name)
+        for i in range(1, len(table)):
+            amount = table[i][1]
+            description = ' '.join([table[i][0], table[i][2]])
+            payments.append((amount, description))
+        logging.info(f'Оплаты вытянуты  из pdf')
         return payments
     except Exception as e:
         logging.error(f'Ошибка при обработке PDF: {e}')
         return None
+    finally:
+        if os.path.exists(file_name):
+            os.remove(file_name)
 
 
 def main_get_document(user_session, account, docId, date_from, date_to):

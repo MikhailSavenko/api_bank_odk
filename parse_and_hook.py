@@ -20,10 +20,9 @@ def parse_naznText(result_payments, account, user_session, date_from , date_to):
         if description == 'Принятые платежи согласно реестру':
             logging.info(f"Получена оплата с ПРИЛОЖЕНИЕМ {payment['docId']}/ {description}/ {payment['crAmount']}")
             counts = main_get_document(user_session, account, payment['docId'], date_from, date_to)
-            logging.info(f'counts = {counts}')
             if counts is not None:
                 for count in counts:
-                    logging.info(f'counts = {count}')
+                    logging.info(f'count = {count}')
                     description = count[1]
                     amount = count[0]
                     contracts_accounts = re.findall(contract_account_pattern, description)
