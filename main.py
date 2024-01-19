@@ -1,5 +1,6 @@
-import datetime
+from datetime import datetime
 import time
+from datetime import timedelta
 
 import requests
 from dotenv import load_dotenv
@@ -16,6 +17,11 @@ import logging
 load_dotenv()
 
 TOKEN = os.environ.get('TOKEN')
+
+TIME_AUTHORIZ = os.getenv('TIME_AUTHORIZ')
+TIME_PROCESS = os.getenv('TIME_PROCESS')
+time_authoriz = datetime.strptime(TIME_AUTHORIZ, '%H:%M').time()
+time_process = datetime.strptime(TIME_PROCESS, '%H:%M').time()
 
 BANK_ACCOUNT_WINDOW = 'BY37OLMP30130001086900000933'
 BANK_ACCOUNT_CEILING = 'BY47OLMP30130009044450000933'
@@ -35,8 +41,8 @@ class ApiBankOkd():
                 self.user_session = user_session
                 return self.user_session
             else:
-                logging.warning("Не удалось авторизоваться на попытке", i + 1)
-        logging.error("Не удалось авторизоваться после", max_attempts, "попыток")
+                logging.warning(f"Не удалось авторизоваться на попытке {i}")
+        logging.error(f"Не удалось авторизоваться после {max_attempts} попыток")
         return None
 
     def session_alive(self):
@@ -88,8 +94,8 @@ class ApiBankOkd():
 
     def process_data(self):
         """Вызываем файл получения выписки"""
-        date_time_now = f'{datetime.datetime.now().date()}T00:00:00+03:00'
-        date_time_yesterday = f"{datetime.datetime.now().date() - datetime.timedelta(days=1)}T00:00:00+03:00"
+        date_time_now = f'{datetime.now().date()}T00:00:00+03:00'
+        date_time_yesterday = f"{datetime.now().date() - timedelta(days=1)}T00:00:00+03:00"
         
         logging.info('Запущена выгрузка за вчера окна')
         self.get_account_statements(payment_write_in_txt_a, BANK_ACCOUNT_WINDOW, date_time_yesterday)
@@ -126,8 +132,8 @@ class ApiBankOkd():
 if __name__ == "__main__":
     configure_logging()
     api_instance = ApiBankOkd()
-    schedule.every().day.at("07:59").do(api_instance.authorization)
-    schedule.every().day.at("07:00").do(api_instance.process_data)
+    schedule.every().day.at(f"{time_authoriz}").do(api_instance.authorization)
+    schedule.every().day.at(f"{time_process}").do(api_instance.process_data)
 
     while True:
         schedule.run_pending()

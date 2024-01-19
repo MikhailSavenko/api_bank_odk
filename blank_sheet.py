@@ -19,19 +19,21 @@ def get_auth_sid():
     
     headers = {
         'Accept': '*/*',
-        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
         'Origin': 'https://www.e-bgpb.by',
+        'Pragma': 'no-cache',
         'Referer': 'https://www.e-bgpb.by/sso/!ClientAuth.Login?auth_return_url=https://ulapi.bgpb.by:8243',
         'Sec-Fetch-Dest': 'empty',
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'same-origin',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'X-Requested-With': 'XMLHttpRequest',
-        'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+        'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120"',
         'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"'
+        'sec-ch-ua-platform': '"Linux"'
     }
     response = session.post(url, headers=headers, data=payload)
     if response.ok:
@@ -39,7 +41,7 @@ def get_auth_sid():
         logging.info(f'SID получен: {auth_sid}')
         return auth_sid
     else:
-        logging.error(f'Не удалос получить SID/ статус код {response.status_code}/ ответ json: {response.json()}')
+        logging.error(f'Не удалос получить SID/ статус код {response.status_code}/ ответ json: {response.text}')
         return None
 
 
