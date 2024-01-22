@@ -86,11 +86,15 @@ class ApiBankOkd():
             logging.info('Выполняется авторизация(go)')
         else:
             logging.info(f'Проверка на дубликаты выполнена. Есть новые зачисления. Кол-во: {len(go_main_get_count)}')
-            payment_write(account, go_main_get_count)
-            logging.info('Архив обновлен')
             parse = parse_naznText(go_main_get_count, account, self.user_session, date, date)
             logging.info(f'Парсинг данных выполнен, готово к вебхуку {parse}')
-            post_webhook(parse)
+            post_wh = post_webhook(parse)
+            if post_wh:
+                payment_write(account, go_main_get_count)
+                logging.info('Архив обновлен')
+            else:
+                logging.info('Архив не обновлялся')
+
 
     def process_data(self):
         """Вызываем файл получения выписки"""
@@ -131,6 +135,7 @@ class ApiBankOkd():
 
 if __name__ == "__main__":
     configure_logging()
+    logging.info('Программа запущена и ждет времени исполнения')
     api_instance = ApiBankOkd()
     schedule.every().day.at(f"{time_authoriz}").do(api_instance.authorization)
     schedule.every().day.at(f"{time_process}").do(api_instance.process_data)
