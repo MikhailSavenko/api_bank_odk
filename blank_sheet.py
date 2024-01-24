@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 import time
 import logging
+from requests.exceptions import ConnectionError, RequestException
 
 load_dotenv()
 
@@ -35,13 +36,17 @@ def get_auth_sid():
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Linux"'
     }
-    response = session.post(url, headers=headers, data=payload)
-    if response.ok:
-        auth_sid = response.cookies.get('auth_sid')
-        logging.info(f'SID получен: {auth_sid}')
-        return auth_sid
-    else:
-        logging.error(f'Не удалос получить SID/ статус код {response.status_code}/ ответ json: {response.text}')
+    try:
+        response = session.post(url, headers=headers, data=payload)
+        if response.ok:
+            auth_sid = response.cookies.get('auth_sid')
+            logging.info(f'SID получен: {auth_sid}')
+            return auth_sid
+        else:
+            logging.error(f'Не удалос получить SID/ статус код {response.status_code}/ ответ json: {response.text}')
+            return None
+    except (ConnectionError, RequestException) as e:
+        logging.error(f'Произошла ошибка при соединении или запросе: {e}')
         return None
 
 

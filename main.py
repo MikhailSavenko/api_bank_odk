@@ -25,7 +25,7 @@ time_process = datetime.strptime(TIME_PROCESS, '%H:%M').time()
 
 BANK_ACCOUNT_WINDOW = 'BY37OLMP30130001086900000933'
 BANK_ACCOUNT_CEILING = 'BY47OLMP30130009044450000933'
-MAX_ITERATIONS = 22
+MAX_ITERATIONS = 21
 SLEEP = 60*15 # сон 15 минут
 
 
@@ -34,7 +34,7 @@ class ApiBankOkd():
         self.user_session = None 
 
     def authorization(self):
-        max_attempts = 7
+        max_attempts = 3
         for i in range(max_attempts):
             user_session = main_blank_sheet()
             if user_session:
@@ -42,6 +42,7 @@ class ApiBankOkd():
                 return self.user_session
             else:
                 logging.warning(f"Не удалось авторизоваться на попытке {i}")
+                time.sleep(180)
         logging.error(f"Не удалось авторизоваться после {max_attempts} попыток")
         return None
 

@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  okd_api_bank:
+    env_file:
+      - .env
+    environment:
+      - TZ=Europe/Moscow
+    container_name: okd_api_bank
+    image: mikesave/api_bank_okd:4
+    restart: always
+    restart_sec: 60
