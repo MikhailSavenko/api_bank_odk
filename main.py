@@ -2,6 +2,7 @@ from datetime import datetime
 import time
 from datetime import timedelta
 
+from requests.exceptions import RequestException
 import requests
 from dotenv import load_dotenv
 import os
@@ -32,19 +33,24 @@ SLEEP = 60*15 # сон 15 минут
 class ApiBankOkd():
     def __init__(self) -> None:
         self.user_session = None 
-
+        
     def authorization(self):
         max_attempts = 3
-        for i in range(max_attempts):
-            user_session = main_blank_sheet()
-            if user_session:
-                self.user_session = user_session
-                return self.user_session
-            else:
-                logging.warning(f"Не удалось авторизоваться на попытке {i}")
-                time.sleep(180)
-        logging.error(f"Не удалось авторизоваться после {max_attempts} попыток")
-        return None
+        try:
+            for i in range(max_attempts):
+                user_session = main_blank_sheet()
+                if user_session:
+                    self.user_session = user_session
+                    logging.info(f"US в main authorization: {self.user_session}")
+                    return self.user_session
+                else:
+                    logging.warning(f"Не удалось авторизоваться на попытке {i}")
+                    time.sleep(180)
+            logging.error(f"Не удалось авторизоваться после {max_attempts} попыток")
+            return None
+        except Exception as e:
+            logging.error(f"Ошибка в методе authorization: {e}", exc_info=True, stack_info=True)
+            return None
 
     def session_alive(self):
         url = "https://ulapi.bgpb.by:8243/wso2_session/isalive/v1.1"
@@ -57,23 +63,31 @@ class ApiBankOkd():
             "userSession": f"{self.user_session}"
             }
         }
-        response = requests.post(url=url, headers=headers, json=data)
-        if response.ok:
-            response_data = response.json()
-            if response_data.get('success') == 'true' and response_data.get('result') is True:
-                logging.info('Сессия продлена(лог в session_alive) True')
-                return True
-            else:
-                logging.info('Сессия не продлена(лог в session_alive) False. Выполняется авторизация!')
-                new_session = self.authorization()
-                if new_session:
-                    self.user_session = new_session
-                    logging.info('Сессия обновлена')
+        try:
+            logging.info(f'Продление сессии параметр usersession: {self.user_session}')
+            response = requests.post(url=url, headers=headers, json=data)
+            if response.ok:
+                response_data = response.json()
+                if response_data.get('success') == 'true' and response_data.get('result') is True:
+                    logging.info(f'Сессия продлена(лог в session_alive) True {response_data}')
                     return True
                 else:
-                    logging.error(f'Обновить сессию не удалось')
-        return False
-    
+                    logging.info('Сессия не продлена(лог в session_alive) False. Выполняется авторизация!')
+                    new_session = self.authorization()
+                    if new_session:
+                        self.user_session = new_session
+                        logging.info('Сессия обновлена')
+                        return True
+                    else:
+                        logging.error(f'Обновить сессию не удалось')
+            return False
+        except RequestException as e:
+            logging.error(f'Ошибка при соединении или запросе session_alive {e}', exc_info=True, stack_info=True)
+            return False
+        except Exception as e:
+            logging.error(f"Ошибка в методе session_alive: {e}")
+            return False
+        
     def get_account_statements(self, payment_write, account, date):
         go_main_get_count = main_get_count(self.user_session, account, date, date)
         if not go_main_get_count:
@@ -96,51 +110,65 @@ class ApiBankOkd():
             else:
                 logging.info('Архив не обновлялся')
 
-
     def process_data(self):
         """Вызываем файл получения выписки"""
-        date_time_now = f'{datetime.now().date()}T00:00:00+03:00'
+        date_time_today = f'{datetime.now().date()}T00:00:00+03:00'
         date_time_yesterday = f"{datetime.now().date() - timedelta(days=1)}T00:00:00+03:00"
-        
-        logging.info('Запущена выгрузка за вчера окна')
-        self.get_account_statements(payment_write_in_txt_a, BANK_ACCOUNT_WINDOW, date_time_yesterday)
-        logging.info('Запущена выгрузка за вчера потолок')
-        self.get_account_statements(payment_write_in_txt_a, BANK_ACCOUNT_CEILING, date_time_yesterday)
-        
-        logging.info('Запущена ПЕРВАЯ за сегодня окна')
-        self.get_account_statements(payment_write_in_txt_w, BANK_ACCOUNT_WINDOW, date_time_now)
-        logging.info('Запущена ПЕРВАЯ за сегодня потолки')
-        self.get_account_statements(payment_write_in_txt_w, BANK_ACCOUNT_CEILING, date_time_now)
-    
-        time.sleep(SLEEP)
+        time_iteration = {
+            '8': 21,
+            '9': 19,
+            '10': 17,
+            '11': 15,
+            '12': 13,
+            '13': 11,
+            '14': 9,
+            '15': 7,
+            '16': 5,
+            '17': 3,
+            '18': 2,
+                    
+        }
+        time_now = datetime.now().time()
+        current_hour = time_now.hour
+        max_iterations = time_iteration.get(str(current_hour), 0)
+        logging.info(f'Установлено количество выгрузок на день: {max_iterations}')
+        if max_iterations ==  MAX_ITERATIONS:
+            logging.info('Начинаются выгрузки за вчера')
+            self.unloading(payment_write_in_txt_a, date_time_yesterday)
 
-        self.session_alive()
-                
-        time.sleep(SLEEP)
+            logging.info('Начинаются первые выгрузки за день')
+            self.unloading(payment_write_in_txt_w, date_time_today)
+            time.sleep(SLEEP)
+            self.session_alive()
+            time.sleep(SLEEP)
 
         iteration_count = 0
-        while iteration_count != MAX_ITERATIONS:
+        while iteration_count != max_iterations:
+            logging.info(f"Цикл начало")
+            logging.info(f'Выгрузка № {iteration_count}')
             iteration_count += 1
+            self.unloading(payment_write_in_txt_a, date_time_today)
             
-            logging.info('Запущена выгрузка окна(цикл)')
-            self.get_account_statements(payment_write_in_txt_a, BANK_ACCOUNT_WINDOW, date_time_now)
-            logging.info('Запущена выгрузка потолки(цикл)')
-            self.get_account_statements(payment_write_in_txt_a, BANK_ACCOUNT_CEILING, date_time_now)
-        
-            time.sleep(SLEEP)
-
             self.session_alive()
-                
+            time.sleep(SLEEP)
+            self.session_alive()
             time.sleep(SLEEP)
 
+    def unloading(self, payment_write, date):
+        logging.info('Запущена выгрузка окна(unloading)')
+        self.get_account_statements(payment_write, BANK_ACCOUNT_WINDOW, date)
+        logging.info('Запущена выгрузка потолки(unloading)')
+        self.get_account_statements(payment_write, BANK_ACCOUNT_CEILING, date)
+        
 
 if __name__ == "__main__":
     configure_logging()
     logging.info('Программа запущена и ждет времени исполнения')
     api_instance = ApiBankOkd()
+    api_instance.authorization()
+    api_instance.process_data()
     schedule.every().day.at(f"{time_authoriz}").do(api_instance.authorization)
     schedule.every().day.at(f"{time_process}").do(api_instance.process_data)
-
     while True:
         schedule.run_pending()
         time.sleep(1)

@@ -1,4 +1,7 @@
 import json
+from pathlib import Path
+
+BASE_DIR = Path(__file__).parent
 
 
 def is_payment_in_txt(account, payment_to_check):
@@ -7,7 +10,10 @@ def is_payment_in_txt(account, payment_to_check):
     elif account == 'BY47OLMP30130009044450000933':
         account = 'ceiling'
         
-    file_path = f"{account}payments.txt"
+    file_name = f"{account}payments.txt"
+    folder = BASE_DIR / 'data'
+    folder.mkdir(exist_ok=True)
+    file_path = folder / file_name
     try:
         with open(file_path, 'r', encoding="utf-8") as file:
             payments_data = json.load(file)
@@ -28,7 +34,10 @@ def payment_write_in_txt_w(account, result_payments):
     elif account == 'BY47OLMP30130009044450000933':
         account = 'ceiling'
 
-    file_path = f"{account}payments.txt"
+    file_name = f"{account}payments.txt"
+    folder = BASE_DIR / 'data'
+    folder.mkdir(exist_ok=True)
+    file_path = folder / file_name
     payment_data_str = json.dumps(result_payments, ensure_ascii=False)
 
     with open(file_path, 'w', encoding="utf-8") as file:
@@ -44,7 +53,10 @@ def payment_write_in_txt_a(account, result_payments):
     elif account == 'BY47OLMP30130009044450000933':
         account = 'ceiling'
 
-    file_path = f"{account}payments.txt"
+    file_name = f"{account}payments.txt"
+    folder = BASE_DIR / 'data'
+    folder.mkdir(exist_ok=True)
+    file_path = folder / file_name
 
     # Прочитать существующий файл, если он существует
     existing_data = []

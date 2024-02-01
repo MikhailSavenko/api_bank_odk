@@ -6,3 +6,6 @@ __pycache__
 .idea
 .env
 docker-compose.yml
+.gitignore
+Dockerfile
+.dockerignore

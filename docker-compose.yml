@@ -1,5 +1,9 @@
 version: '3'
 
+volumes:
+  txt_db:
+    name: api_bank_okd_txt
+
 services:
   okd_api_bank:
     env_file:
@@ -7,6 +11,7 @@ services:
     environment:
       - TZ=Europe/Moscow
     container_name: okd_api_bank
-    image: mikesave/api_bank_okd:4
+    image: mikesave/api_bank_okd:6
     restart: always
-    restart_sec: 60
+    volumes:
+      - txt_db:/app/data

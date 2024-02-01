@@ -3,17 +3,18 @@ from dotenv import load_dotenv
 import os
 import time
 import logging
-from requests.exceptions import ConnectionError, RequestException
+from requests.exceptions import RequestException
 
 load_dotenv()
 
 PAYLOAD = os.environ.get('PAYLOAD')
 TOKEN = os.environ.get('TOKEN')
+CLIENT_ID = os.environ.get('CLIENT_ID')
 
 session = requests.Session()
 
 
-def get_auth_sid():
+def authentication():
     """Аутентификация. Получаем SID код"""
     url = "https://www.e-bgpb.by/sso/!ClientAuth.Authentication?auth_gui=full"
     payload = PAYLOAD
@@ -45,37 +46,12 @@ def get_auth_sid():
         else:
             logging.error(f'Не удалос получить SID/ статус код {response.status_code}/ ответ json: {response.text}')
             return None
-    except (ConnectionError, RequestException) as e:
-        logging.error(f'Произошла ошибка при соединении или запросе: {e}')
-        return None
-
-
-def get_client_id(auth_sid):
-    """Получение идентификатора необходимой организации (сlientId)"""
-    auth_url = "https://ulapi.bgpb.by:8243/wso2_clients/v1.1/"
-    headers = {
-        "Authorization": f"Bearer {TOKEN}",
-        "Content-Length": "83",
-        "Host": "ulapi.bgpb.by:8243",
-        "Content-Type": "application/json",
-    }
-    data1 = {
-        "IdentificationBySSOSessionId": {
-        "ssoSessionId": f"{auth_sid}"
-        }
-    }
-    response = session.post(auth_url, headers=headers, json=data1)
-
-    if response.status_code == 200:
-        client_id = response.json().get('result', {}).get('clientList', [{}])[0].get('clientId')
-        logging.info(f"Получен clientId {client_id}")
-        return client_id
-    else:
-        logging.error(f"Ошибка при запросе получения clientId статус:{response.status_code}, ответ json: {response.json()}")
+    except RequestException as e:
+        logging.exception(f'Произошла ошибка при соединении или запросе Аутентификации: {e}', exc_info=True, stack_info=True)
         return None
     
 
-def authenticate_user(auth_sid, client_id, token):
+def authorization(auth_sid, client_id, token):
     """Прохождения авторизации, открытие сессии и получения ее идентификатора"""
     time.sleep(5)
     url_login = "https://ulapi.bgpb.by:8243/wso2_login/v1.1/"
@@ -91,26 +67,27 @@ def authenticate_user(auth_sid, client_id, token):
             "ssoSessionId": f"{auth_sid}"
         }
     }
-
-    response_login = session.post(url_login, headers=headers, json=data_login)
-
-    if response_login.status_code == 200:
-        user_session = response_login.json()["result"]["userSession"]
-        logging.info(f'Успешная авторизация. UserSession: {user_session}')
-        return user_session
-    logging.error(f"Ошибка авторизации статус код: {response_login.status_code}, ответ json: {response_login.json()}")
-    return None
+    try:
+        response_login = session.post(url_login, headers=headers, json=data_login)
+        if response_login.status_code == 200:
+            user_session = response_login.json()["result"]["userSession"]
+            logging.info(f'Успешная авторизация. UserSession: {user_session}')
+            return user_session
+        logging.error(f"Ошибка авторизации статус код: {response_login.status_code}, ответ json: {response_login.json()}")
+        return None
+    except RequestException as e:
+        logging.exception(f'Произошла ошибка при соединении или запросе Авторизации {e}', exc_info=True, stack_info=True)
 
 
 def main_blank_sheet():
-    auth_sid = get_auth_sid()
+    auth_sid = authentication()
     if auth_sid:
-        client_id = get_client_id(auth_sid)
-        if client_id:
-            user_session = authenticate_user(auth_sid, client_id, TOKEN)
-            return user_session
+        user_session = authorization(auth_sid, CLIENT_ID, TOKEN)
+        return user_session
     return None
 
 
 if __name__ == "__main__":
     main_blank_sheet()
+
+

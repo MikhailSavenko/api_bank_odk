@@ -43,7 +43,7 @@ def get_document(user_session, account, docId, date_from, date_to):
         logging.info(f'Получение приложения к оплате..')
         return base64_response
     except requests.RequestException as e:
-        logging.error(f'Ошибка при запросе к API: {e}')
+        logging.error(f'Ошибка при запросе к API, получение приложения: {e}')
         return None
 
 
@@ -70,12 +70,11 @@ def cleaned_data(data):
 
 
 def extract_table(pdf_path):
-    pdf = pdfplumber.open(pdf_path)
-    table_page = pdf.pages[1]
-    data = table_page.extract_tables()[0]
-    table = cleaned_data(data)
-    pdf.close()
-    return table
+    with pdfplumber.open(pdf_path) as pdf:
+        table_page = pdf.pages[1]
+        data = table_page.extract_tables()[0]
+        table = cleaned_data(data)
+        return table
 
 
 def get_payments_from_pdf(file_name):
