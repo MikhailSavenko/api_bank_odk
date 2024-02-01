@@ -153,6 +153,8 @@ class ApiBankOkd():
             time.sleep(SLEEP)
             self.session_alive()
             time.sleep(SLEEP)
+        logging.info(f'Выполнены успешно все установленные: {max_iterations}')
+        logging.info(f'Программа ждет времени исполнения {time_process}')
 
     def unloading(self, payment_write, date):
         logging.info('Запущена выгрузка окна(unloading)')
@@ -163,7 +165,7 @@ class ApiBankOkd():
 
 if __name__ == "__main__":
     configure_logging()
-    logging.info('Программа запущена и ждет времени исполнения')
+    logging.info('Программа запущена')
     api_instance = ApiBankOkd()
     api_instance.authorization()
     api_instance.process_data()

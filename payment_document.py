@@ -74,7 +74,7 @@ def extract_table(pdf_path):
         table_page = pdf.pages[1]
         data = table_page.extract_tables()[0]
         table = cleaned_data(data)
-        return table
+    return table
 
 
 def get_payments_from_pdf(file_name):
