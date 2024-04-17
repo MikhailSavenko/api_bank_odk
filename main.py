@@ -101,7 +101,7 @@ class ApiBankOkd():
             logging.info('Выполняется авторизация(go)')
         else:
             logging.info(f'Проверка на дубликаты выполнена. Есть новые зачисления. Кол-во: {len(go_main_get_count)}')
-            parse = parse_naznText(go_main_get_count, account, self.user_session, date, date)
+            parse = parse_naznText(go_main_get_count, account, self.user_session)
             logging.info(f'Парсинг данных выполнен, готово к вебхуку {parse}')
             post_wh = post_webhook(parse)
             if post_wh:

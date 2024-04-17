@@ -5,7 +5,7 @@ import requests
 from payment_document import main_get_document
 
 
-def parse_naznText(result_payments, account, user_session, date_from , date_to):
+def parse_naznText(result_payments, account, user_session):
     extracted_data = []
     # Регулярное выражение для номера договора/счета
     contract_account_pattern = r'\b(?!(?:200[0-9]|201[0-4]|202[0-4]|00000)\b)N?(\d{4,6})(?![/])\b'
@@ -17,9 +17,10 @@ def parse_naznText(result_payments, account, user_session, date_from , date_to):
         date_str = date_part.strftime('%Y-%m-%d')
         time_str = time_part.strftime("%H:%M")
         description = payment['naznText']
-        if description == 'Принятые платежи согласно реестру':
+        opr = int(payment['opr'])
+        if opr == 1:
             logging.info(f"Получена оплата с ПРИЛОЖЕНИЕМ {payment['docId']}/ {description}/ {payment['crAmount']}")
-            counts = main_get_document(user_session, account, payment['docId'], date_from, date_to)
+            counts = main_get_document(user_session, account, payment['docId'], date_and_time, date_and_time)
             if counts is not None:
                 for count in counts:
                     logging.info(f'count = {count}')
@@ -38,7 +39,19 @@ def parse_naznText(result_payments, account, user_session, date_from , date_to):
                     })
                 logging.info(f'Платежи из pdf добавлены в общий список на отправку в crm. Их количество: {len(counts)}')
             else:
-                logging.warning('Не удалось получить данные из pdf. Пропускаем запись в общий список.')
+                logging.warning('Одностраничный файл приложения. Оплата отправляется без изменений.')
+                contracts_accounts = re.findall(contract_account_pattern, description)
+                contract = contracts_accounts[0] if contracts_accounts else ''
+
+                extracted_data.append({
+                    'description': description,
+                    'contract': contract,
+                    'account': account,
+                    'time': time_str,
+                    'date': date_str,
+                    'amount': payment['crAmount']
+
+                })
         else:
             contracts_accounts = re.findall(contract_account_pattern, description)
             contract = contracts_accounts[0] if contracts_accounts else ''

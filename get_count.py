@@ -69,7 +69,8 @@ def get_result(payments, account):
         crAmount = payment.get('crAmount', None)
         naznText = payment.get('naznText', None)
         docDate = payment.get('docDate', None)
-        result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText})
+        opr = payment.get('opr', None)
+        result_payments.append({"docId": docId, "docDate": docDate, "crAmount": crAmount, "naznText": naznText, "opr": opr})
     for payment_duble in result_payments:
         if not is_payment_in_txt(account, payment_duble):
             result_payments_not_dubble.append(payment_duble)
