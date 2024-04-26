@@ -88,7 +88,7 @@ def get_payments_from_pdf(file_name):
         logging.info(f'Оплаты вытянуты  из pdf')
         return payments
     except Exception as e:
-        logging.error(f'Ошибка при обработке PDF: {e}')
+        logging.warning(f'Одностраничная оплата. PDF: {e}')
         return None
     finally:
         if os.path.exists(file_name):
