@@ -11,7 +11,7 @@ services:
     environment:
       - TZ=Europe/Moscow
     container_name: okd_api_bank
-    image: mikesave/api_bank_okd:6
+    image: mikesave/api_bank_okd:10
     restart: always
     volumes:
       - txt_db:/app/data

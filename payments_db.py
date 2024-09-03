@@ -1,13 +1,18 @@
 import json
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).parent
 
 
 def is_payment_in_txt(account, payment_to_check):
-    if account == 'BY37OLMP30130001086900000933':
+    if account == os.getenv('BANK_ACCOUNT_WINDOW'):
         account = 'window'
-    elif account == 'BY47OLMP30130009044450000933':
+    elif account == os.getenv('BANK_ACCOUNT_CEILING'):
         account = 'ceiling'
         
     file_name = f"{account}payments.txt"
@@ -29,9 +34,9 @@ def payment_write_in_txt_w(account, result_payments):
     # Новая проверка, чтобы не записывался null
     if result_payments is None or not result_payments:
         result_payments = []
-    if account == 'BY37OLMP30130001086900000933':
+    if account == os.getenv('BANK_ACCOUNT_WINDOW'):
         account = 'window'
-    elif account == 'BY47OLMP30130009044450000933':
+    elif account == os.getenv('BANK_ACCOUNT_CEILING'):
         account = 'ceiling'
 
     file_name = f"{account}payments.txt"
@@ -48,9 +53,9 @@ def payment_write_in_txt_w(account, result_payments):
 
 def payment_write_in_txt_a(account, result_payments):
     """Работает как режим 'a' - добавление в конец файла."""
-    if account == 'BY37OLMP30130001086900000933':
+    if account == os.getenv('BANK_ACCOUNT_WINDOW'):
         account = 'window'
-    elif account == 'BY47OLMP30130009044450000933':
+    elif account == os.getenv('BANK_ACCOUNT_CEILING'):
         account = 'ceiling'
 
     file_name = f"{account}payments.txt"
